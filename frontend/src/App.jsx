@@ -15,7 +15,7 @@ function Header() {
         <header className="px-6 py-3 border-b bg-white flex justify-between items-center shadow-sm sticky top-0 z-50">
             <div className="flex items-center gap-8">
                 <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
-                    <img src="/psicofisio1.png" alt="PsicoFisio" className="h-9 object-contain" />
+                    <img src="/psicofisio.png" alt="PsicoFisio" className="h-9 object-contain" />
                     {/* <span className="font-display font-bold text-lg text-slate-700">CaurnAtiva</span> */}
                 </Link>
 
@@ -42,7 +42,7 @@ function WelcomeScreen() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
             <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center space-y-6">
                 <div className="flex justify-center mb-6">
-                    <img src="/psicofisio1.png" alt="Psicofisio" className="h-28 object-contain" />
+                    <img src="/psicofisio.png" alt="PsicoFisio" className="h-28 object-contain" />
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900 border-b pb-4">Acesso Restrito</h2>
