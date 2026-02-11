@@ -10,6 +10,7 @@ database_url = os.getenv("DATABASE_URL")
 # If DATABASE_URL is set, use it. Otherwise, fallback to SQLite.
 # Normalize the URL string
 if database_url:
+    print(f"DEBUG: Raw DATABASE_URL: {database_url}")
     database_url = database_url.strip().strip("'").strip('"')
 
 # Note: Render provides postgres:// which SQLAlchemy < 1.4 doesn't like, replace with postgresql://
