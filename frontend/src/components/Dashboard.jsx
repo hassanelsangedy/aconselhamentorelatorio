@@ -44,7 +44,7 @@ export default function Dashboard() {
             alert("Análise ainda não concluída.");
             return;
         }
-        const html = generateHTMLReport(sessao.analise_json, null, window.location.origin + '/logos/caurnpersonaldigital.jpeg', window.location.origin + '/psicofisio1.png');
+        const html = generateHTMLReport(sessao.analise_json, null, window.location.origin + '/logos/caurnpersonaldigital.jpeg', window.location.origin + '/psicofisio.png');
         const blob = new Blob([html], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         window.open(url, '_blank');
@@ -55,7 +55,7 @@ export default function Dashboard() {
             alert("Análise ainda não concluída.");
             return;
         }
-        const html = generateHTMLReport(sessao.analise_json, null, window.location.origin + '/logos/caurnpersonaldigital.jpeg', window.location.origin + '/psicofisio1.png');
+        const html = generateHTMLReport(sessao.analise_json, null, window.location.origin + '/logos/caurnpersonaldigital.jpeg', window.location.origin + '/psicofisio.png');
 
         // Inject auto-download script
         const autoDownloadScript = `
