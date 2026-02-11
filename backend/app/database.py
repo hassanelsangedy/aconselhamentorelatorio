@@ -17,7 +17,7 @@ if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 connection_string = database_url if database_url else sqlite_url
-
+print(f"DEBUG: Connection string: {connection_string}") # Debug print
 connect_args = {"check_same_thread": False} if "sqlite" in connection_string else {}
 engine = create_engine(connection_string, echo=True, connect_args=connect_args)
 
