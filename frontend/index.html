@@ -9,38 +9,6 @@
 </head>
 
 <body>
-  <script>
-    window.onerror = function (message, source, lineno, colno, error) {
-      var errorDiv = document.createElement('div');
-      errorDiv.style.position = 'fixed';
-      errorDiv.style.top = '50px'; // Below the yellow bar
-      errorDiv.style.left = '0';
-      errorDiv.style.width = '100%';
-      errorDiv.style.background = 'red';
-      errorDiv.style.color = 'white';
-      errorDiv.style.padding = '20px';
-      errorDiv.style.zIndex = '9999';
-      errorDiv.innerHTML = '<h3>ERRO JS:</h3><p>' + message + '</p>';
-      document.body.appendChild(errorDiv);
-    };
-
-    window.addEventListener('unhandledrejection', function (event) {
-      var errorDiv = document.createElement('div');
-      errorDiv.style.position = 'fixed';
-      errorDiv.style.top = '150px';
-      errorDiv.style.left = '0';
-      errorDiv.style.width = '100%';
-      errorDiv.style.background = 'orange';
-      errorDiv.style.color = 'black';
-      errorDiv.style.padding = '20px';
-      errorDiv.style.zIndex = '9999';
-      errorDiv.innerHTML = '<h3>ERRO PROMESSA:</h3><p>' + event.reason + '</p>';
-      document.body.appendChild(errorDiv);
-    });
-  </script>
-  <div style="background: yellow; color: black; padding: 10px; text-align: center; font-weight: bold;">
-    MOBILIDADE: Se você vê isso, o site carregou! (Aguardando React...)
-  </div>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
