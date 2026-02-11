@@ -8,6 +8,10 @@ import os
 database_url = os.getenv("DATABASE_URL")
 
 # If DATABASE_URL is set, use it. Otherwise, fallback to SQLite.
+# Normalize the URL string
+if database_url:
+    database_url = database_url.strip().strip("'").strip('"')
+
 # Note: Render provides postgres:// which SQLAlchemy < 1.4 doesn't like, replace with postgresql://
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
