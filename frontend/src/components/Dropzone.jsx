@@ -8,6 +8,7 @@ export default function Dropzone({ onUploadSuccess }) {
     const [message, setMessage] = useState(null);
     const [templates, setTemplates] = useState([]);
     const [selectedTemplate, setSelectedTemplate] = useState("");
+    const [loadingTemplates, setLoadingTemplates] = useState(true);
     const { getToken } = useAuth(); // Clerk Token
 
     // Fetch Templates on Mount
@@ -22,10 +23,11 @@ export default function Dropzone({ onUploadSuccess }) {
                 if (res.ok) {
                     const data = await res.json();
                     setTemplates(data);
-                    if (data.length > 0) setSelectedTemplate(data[0].id); // Select first by default
                 }
             } catch (err) {
                 console.error("Erro ao carregar templates:", err);
+            } finally {
+                setLoadingTemplates(false);
             }
         };
         fetchTemplates();
@@ -111,15 +113,18 @@ export default function Dropzone({ onUploadSuccess }) {
                     value={selectedTemplate}
                     onChange={(e) => setSelectedTemplate(e.target.value)}
                     className="flex-1 p-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
-                    disabled={uploading}
+                    disabled={uploading || loadingTemplates}
                 >
+                    <option value="">Padrão (IA Geral)</option>
                     {templates.map(t => (
                         <option key={t.id} value={t.id}>{t.nome}</option>
                     ))}
-                    {templates.length === 0 && <option>Carregando modelos...</option>}
+                    {loadingTemplates && <option disabled>Carregando...</option>}
                 </select>
                 <span className="text-xs text-slate-400 hidden sm:inline-block">
-                    {templates.find(t => t.id == selectedTemplate)?.descricao || ""}
+                    {selectedTemplate
+                        ? (templates.find(t => t.id == selectedTemplate)?.descricao || "")
+                        : "Modelo padrão do sistema."}
                 </span>
             </div>
 
