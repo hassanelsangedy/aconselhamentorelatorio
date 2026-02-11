@@ -28,11 +28,14 @@ origins = [
     "http://192.168.0.183:3000",
 ]
 if frontend_url:
-    origins.append(frontend_url)
+    origins.append(frontend_url.strip().rstrip("/")) # Strip trailing slash just in case
+
+print(f"DEBUG: Allowed Origins: {origins}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins, # Usa a lista dinâmica (Local + Prod)
+    # allow_origins=origins, 
+    allow_origins=["*"], # TEMPORARY: Allow all to debug 400 Bad Request on OPTIONS
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
