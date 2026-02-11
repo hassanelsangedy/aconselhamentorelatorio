@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, FileAudio, CheckCircle, AlertCircle, Eye, Loader2, LogOut } from 'lucide-react';
+import { Upload, FileAudio, CheckCircle, AlertCircle, Eye, Loader2, LogOut, FileText } from 'lucide-react';
 import Dropzone from './Dropzone';
 import { generateHTMLReport } from '../utils/reportGenerator';
 import { useAuth } from '@clerk/clerk-react';
@@ -44,10 +44,39 @@ export default function Dashboard() {
             alert("Análise ainda não concluída.");
             return;
         }
-        const logoUrl = window.location.origin + '/psicofisio.png';
         const html = generateHTMLReport(sessao.analise_json, null, window.location.origin + '/logos/caurnpersonaldigital.jpeg', window.location.origin + '/psicofisio.png');
         const blob = new Blob([html], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+    };
+
+    const handleDownloadPDF = (sessao) => {
+        if (!sessao.analise_json) {
+            alert("Análise ainda não concluída.");
+            return;
+        }
+        const html = generateHTMLReport(sessao.analise_json, null, window.location.origin + '/logos/caurnpersonaldigital.jpeg', window.location.origin + '/psicofisio.png');
+
+        // Inject auto-download script
+        const autoDownloadScript = `
+            <script>
+                window.onload = function() {
+                    setTimeout(() => {
+                        if(typeof downloadPDF === 'function') {
+                            downloadPDF();
+                        } else {
+                            console.error('Função downloadPDF não encontrada');
+                        }
+                    }, 1000); // Wait for resources
+                }
+            </script>
+        `;
+
+        const finalHtml = html.replace('</body>', `${autoDownloadScript}</body>`);
+        const blob = new Blob([finalHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+
+        // Open in new tab which will auto-download
         window.open(url, '_blank');
     };
 
@@ -118,13 +147,22 @@ export default function Dashboard() {
                                         </td>
                                         <td className="p-4 text-right">
                                             {sessao.status === 'CONCLUIDO' && (
-                                                <button
-                                                    onClick={() => handleReport(sessao)}
-                                                    className="text-primary hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50"
-                                                    title="Ver Relatório"
-                                                >
-                                                    <Eye className="w-5 h-5" />
-                                                </button>
+                                                <div className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => handleReport(sessao)}
+                                                        className="text-primary hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50"
+                                                        title="Ver Relatório"
+                                                    >
+                                                        <Eye className="w-5 h-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDownloadPDF(sessao)}
+                                                        className="text-red-500 hover:text-red-700 transition-colors p-2 rounded-lg hover:bg-red-50"
+                                                        title="Baixar PDF"
+                                                    >
+                                                        <FileText className="w-5 h-5" />
+                                                    </button>
+                                                </div>
                                             )}
                                         </td>
                                     </tr>
