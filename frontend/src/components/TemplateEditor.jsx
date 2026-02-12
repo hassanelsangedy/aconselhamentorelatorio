@@ -72,14 +72,15 @@ export default function TemplateEditor() {
                 fetchTemplates(); // Refresh list
             } else {
                 let errorText = 'Erro ao salvar modelo.';
+                const responseText = await response.text(); // Read once
+                console.error("Server Error Response:", responseText); // Log raw response
+
                 try {
-                    const err = await response.json();
+                    const err = JSON.parse(responseText);
                     errorText = err.detail || errorText;
                 } catch (jsonError) {
-                    console.error("Erro ao fazer parse do erro JSON:", jsonError);
-                    const text = await response.text();
-                    console.error("Resposta bruta:", text);
-                    errorText = `Erro ${response.status}: Resposta inválida do servidor.`;
+                    // Not JSON, likely HTML (404/500)
+                    errorText = `Erro ${response.status}: O servidor retornou uma resposta inesperada.`;
                 }
                 setMessage({ type: 'error', text: errorText });
             }
