@@ -72,7 +72,7 @@ else:
     app.include_router(templates_router.router, prefix="/api")
     app.include_router(upload_router, prefix="/api")
 
-    @app.get("/")
+    @app.api_route("/", methods=["GET", "HEAD"])
     def read_root():
         return {"message": "API Aconselhamento Ativa - Multi-User Ready"}
 
