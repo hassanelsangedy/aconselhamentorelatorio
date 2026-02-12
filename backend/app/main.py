@@ -88,7 +88,7 @@ async def cors_guard(request: Request, call_next):
 
 
 # Log Middleware (Keep this for debugging)
-app.add_middleware(LogMiddleware)
+
 
 if startup_error:
     @app.get("/{path:path}")
