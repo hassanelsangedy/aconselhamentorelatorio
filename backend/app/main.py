@@ -61,30 +61,47 @@ class LogMiddleware(BaseHTTPMiddleware):
             raise e
 
 app = FastAPI(lifespan=lifespan, redirect_slashes=False)
-app.add_middleware(LogMiddleware)
 
-# --- CUSTOM CORS MIDDLEWARE (BRUTE FORCE) ---
-# Standard CORSMiddleware is being difficult. We will handle headers manually.
+# --- NUCLEAR OPTION CORS ---
+# Manually handle CORS at the lowest level possible
 @app.middleware("http")
-async def cors_guard(request: Request, call_next):
-    origin = request.headers.get("origin")
-    
-    # Allow all origins for now to unblock (since we use Bearer tokens, CSRF risk is low)
-    # In production, check against a whitelist if needed.
-    safe_origin = origin if origin else "*"
-    
+async def add_cors_headers(request: Request, call_next):
+    # Hijack OPTIONS requests
     if request.method == "OPTIONS":
-        response = JSONResponse(content={"message": "CORS Preflight OK"}, status_code=200)
-    else:
-        response = await call_next(request)
+        return JSONResponse(
+            status_code=200,
+            content={"message": "Preflight OK"},
+            headers={
+                "Access-Control-Allow-Origin": request.headers.get("origin") or "*",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Credentials": "true",
+            }
+        )
     
-    # Attach CORS Headers to EVERY response
-    response.headers["Access-Control-Allow-Origin"] = safe_origin
+    # Process normal request
+    try:
+        response = await call_next(request)
+    except Exception as e:
+        # Even if app crashes, return CORS
+        print(f"❌ App Error: {e}")
+        response = JSONResponse(
+            status_code=500,
+            content={"detail": str(e)}
+        )
+
+    # Inject Headers into Response
+    origin = request.headers.get("origin")
+    response.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
     response.headers["Access-Control-Allow-Credentials"] = "true"
     response.headers["Access-Control-Allow-Methods"] = "*"
     response.headers["Access-Control-Allow-Headers"] = "*"
     
     return response
+
+app.add_middleware(LogMiddleware)
+# NO MORE Standard CORSMiddleware
+
 
 
 # Log Middleware (Keep this for debugging)
