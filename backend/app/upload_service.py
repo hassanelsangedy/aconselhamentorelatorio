@@ -17,6 +17,7 @@ UPLOAD_DIR = "data/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.get("/sessoes")
+@router.get("/sessoes/", include_in_schema=False)
 async def listar_sessoes(session: Session = Depends(get_session)):
     print("⚡ GET /sessoes chamado")
     try:
@@ -66,6 +67,7 @@ async def obter_sessao(sessao_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload")
+@router.post("/upload/", include_in_schema=False)
 async def upload_audio(
     background_tasks: BackgroundTasks,
     file: UploadFile, 
