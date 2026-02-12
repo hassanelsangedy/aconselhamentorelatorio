@@ -15,9 +15,9 @@ function Header() {
     return (
         <header className="px-6 py-3 border-b bg-white flex justify-between items-center shadow-sm sticky top-0 z-50">
             <div className="flex items-center gap-8">
-                <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition">
-                    <img src="/psicofisio.png" alt="PsicoFisio" className="h-16 object-contain" />
-                    <span className="font-display font-bold text-2xl text-slate-800 tracking-tight">PsicoFisio</span>
+                <Link to="/" className="flex items-center gap-4 hover:opacity-80 transition">
+                    <img src="/psicofisio.png" alt="PsicoFisio" className="h-30 object-contain" />
+                    <span className="font-display font-bold text-3xl text-slate-800 tracking-tight">Grupo PsicoFisio</span>
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-1">
