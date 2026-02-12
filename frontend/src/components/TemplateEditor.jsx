@@ -44,6 +44,8 @@ export default function TemplateEditor() {
         setSaving(true);
         setMessage(null);
 
+        console.log("Saving model...", { nome, API_URL });
+
         try {
             const token = await getToken();
             const payload = {
@@ -69,11 +71,21 @@ export default function TemplateEditor() {
                 setSystemPrompt("");
                 fetchTemplates(); // Refresh list
             } else {
-                const err = await response.json();
-                setMessage({ type: 'error', text: err.detail || 'Erro ao salvar modelo.' });
+                let errorText = 'Erro ao salvar modelo.';
+                try {
+                    const err = await response.json();
+                    errorText = err.detail || errorText;
+                } catch (jsonError) {
+                    console.error("Erro ao fazer parse do erro JSON:", jsonError);
+                    const text = await response.text();
+                    console.error("Resposta bruta:", text);
+                    errorText = `Erro ${response.status}: Resposta inválida do servidor.`;
+                }
+                setMessage({ type: 'error', text: errorText });
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Erro de conexão.' });
+            console.error("Erro Fatal no Save:", error);
+            setMessage({ type: 'error', text: `Erro de conexão: ${error.message}` });
         } finally {
             setSaving(false);
         }
