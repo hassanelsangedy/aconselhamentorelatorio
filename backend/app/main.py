@@ -18,23 +18,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 
 # Configurar CORS
-import os
-frontend_url = os.getenv("FRONTEND_URL")
-origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "https://aconselhamentorelatorio-poqy.vercel.app", # Vercel URL from screenshot
-]
-if frontend_url:
-    origins.append(frontend_url.strip().rstrip("/"))
-
-print(f"DEBUG: Allowed Origins: {origins}")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins, # Use specific origins
+    allow_origin_regex="https?://.*", # Allow ANY http/https origin with credentials
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
