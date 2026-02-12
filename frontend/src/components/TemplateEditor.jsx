@@ -55,7 +55,7 @@ export default function TemplateEditor() {
                 schema_json: {} // Empty for now, can be expanded later
             };
 
-            const response = await fetch(`${API_URL}/api/templates/`, {
+            const response = await fetch(`${API_URL}/api/templates`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
