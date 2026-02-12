@@ -15,11 +15,13 @@ class TemplateCreate(BaseModel):
     schema_json: Dict[str, Any]
 
 @router.get("", response_model=List[ModeloRelatorio])
+@router.get("/", response_model=List[ModeloRelatorio], include_in_schema=False)
 async def list_templates(session: Session = Depends(get_session)):
     templates = session.exec(select(ModeloRelatorio).where(ModeloRelatorio.ativo == True)).all()
     return templates
 
 @router.post("", response_model=ModeloRelatorio, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ModeloRelatorio, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 async def create_template(
     template_data: TemplateCreate,
     current_user: Usuario = Depends(get_current_user), # Requires login
