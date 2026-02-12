@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileAudio, CheckCircle, AlertCircle, Eye, Loader2, LogOut, FileText } from 'lucide-react';
+import { Upload, FileAudio, CheckCircle, AlertCircle, Eye, Loader2, LogOut, FileText, Share2 } from 'lucide-react';
 import Dropzone from './Dropzone';
 import { generateHTMLReport } from '../utils/reportGenerator';
 import { useAuth } from '@clerk/clerk-react';
@@ -45,7 +45,7 @@ export default function Dashboard() {
         return () => clearInterval(interval);
     }, []);
 
-    const navigate = useNavigate(); // Add hook
+    const navigate = useNavigate();
 
     const handleReport = (sessao) => {
         if (!sessao.analise_json) {
@@ -87,6 +87,34 @@ export default function Dashboard() {
 
         // Open in new tab which will auto-download
         window.open(url, '_blank');
+    };
+
+    const handleShare = async (sessao) => {
+        const email = prompt("Digite o e-mail do usuário com quem deseja compartilhar:");
+        if (!email) return;
+
+        try {
+            const token = await getToken();
+            const API_URL = import.meta.env.VITE_API_URL || "";
+            const response = await fetch(`${API_URL}/api/sessoes/${sessao.id}/compartilhar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ email: email })
+            });
+
+            if (response.ok) {
+                alert("Sessão compartilhada com sucesso!");
+            } else {
+                const err = await response.json();
+                alert(`Erro ao compartilhar: ${err.detail || 'Falha desconhecida'}`);
+            }
+        } catch (error) {
+            console.error("Erro ao compartilhar:", error);
+            alert("Erro de conexão ao compartilhar.");
+        }
     };
 
     const getStatusColor = (status) => {
@@ -158,6 +186,13 @@ export default function Dashboard() {
                                         <td className="p-4 text-right">
                                             {sessao.status === 'CONCLUIDO' && (
                                                 <div className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => handleShare(sessao)}
+                                                        className="text-green-600 hover:text-green-800 transition-colors p-2 rounded-lg hover:bg-green-50"
+                                                        title="Compartilhar"
+                                                    >
+                                                        <Share2 className="w-5 h-5" />
+                                                    </button>
                                                     <button
                                                         onClick={() => handleReport(sessao)}
                                                         className="text-primary hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50"

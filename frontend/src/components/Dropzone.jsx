@@ -84,8 +84,18 @@ export default function Dropzone({ onUploadSuccess }) {
 
         try {
             const token = await getToken();
-            const API_URL = import.meta.env.VITE_API_URL || "";
-            const response = await fetch(`${API_URL}/api/upload`, {
+            const API_URL = import.meta.env.VITE_API_URL;
+
+            if (!API_URL) {
+                throw new Error("A variável de ambiente VITE_API_URL não está configurada! O sistema está tentando acessar a própria URL.");
+            }
+            if (!token) {
+                console.warn("Token de autenticação não encontrado (usuário deslogado?)");
+            }
+
+            console.log(`Iniciando upload para: ${API_URL}/api/upload`);
+
+            const response = await fetch(`${API_URL}/api/upload/`, { // Force trailing slash just in case
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
