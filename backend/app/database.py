@@ -19,6 +19,11 @@ if database_url and database_url.startswith("postgres://"):
 
 connection_string = database_url if database_url else sqlite_url
 print(f"DEBUG: Connection string: {connection_string}") # Debug print
+
+# Ensure data directory exists if using SQLite
+if "sqlite" in connection_string:
+    os.makedirs(os.path.dirname(sqlite_file_name), exist_ok=True)
+
 connect_args = {"check_same_thread": False} if "sqlite" in connection_string else {}
 engine = create_engine(connection_string, echo=True, connect_args=connect_args)
 
