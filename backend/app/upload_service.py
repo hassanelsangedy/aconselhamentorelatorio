@@ -6,9 +6,11 @@ import os
 import uuid
 import logging
 from typing import Optional
+from pydantic import BaseModel
 from app.database import get_session, engine
-from app.models import Participante, SessaoAconselhamento, StatusSessao, ModeloRelatorio
+from app.models import Participante, SessaoAconselhamento, StatusSessao, ModeloRelatorio, Usuario, CompartilhamentoSessao
 from app.ai_service import AIService
+from app.auth import get_current_user
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
@@ -18,10 +20,23 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.get("/sessoes")
 @router.get("/sessoes/", include_in_schema=False)
-async def listar_sessoes(session: Session = Depends(get_session)):
-    print("⚡ GET /sessoes chamado")
+async def listar_sessoes(
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
+    print(f"⚡ GET /sessoes chamado por {current_user.email}")
     try:
-        statement = select(SessaoAconselhamento).join(Participante)
+        # Subquery for shared sessions
+        shared_query = select(CompartilhamentoSessao.sessao_id).where(
+            CompartilhamentoSessao.usuario_destinatario_id == current_user.id
+        )
+        
+        # Main query: Owner OR Shared
+        statement = select(SessaoAconselhamento).join(Participante).where(
+            (SessaoAconselhamento.usuario_id == current_user.id) | 
+            (SessaoAconselhamento.id.in_(shared_query))
+        )
+        
         results = session.exec(statement).all()
         
         return [
@@ -43,12 +58,29 @@ async def listar_sessoes(session: Session = Depends(get_session)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessoes/{sessao_id}")
-async def obter_sessao(sessao_id: int, session: Session = Depends(get_session)):
+async def obter_sessao(
+    sessao_id: int, 
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
     try:
         sessao = session.get(SessaoAconselhamento, sessao_id)
         if not sessao:
             raise HTTPException(status_code=404, detail="Sessão não encontrada")
         
+        # Check Authorization
+        has_access = (sessao.usuario_id == current_user.id)
+        if not has_access:
+            share = session.exec(select(CompartilhamentoSessao).where(
+                CompartilhamentoSessao.sessao_id == sessao_id,
+                CompartilhamentoSessao.usuario_destinatario_id == current_user.id
+            )).first()
+            if share:
+                has_access = True
+        
+        if not has_access:
+             raise HTTPException(status_code=403, detail="Acesso negado")
+
         return {
             "id": sessao.id,
             "data_upload": sessao.data_upload,
@@ -73,9 +105,11 @@ async def upload_audio(
     file: UploadFile, 
     nome_participante: str = Form("Desconhecido"), 
     modelo_id: Optional[int] = Form(None), # Optional, defaults to finding active one
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
 ):
     try:
+        print(f"🔥 UPLOAD INICIADO por {current_user.email}")
         # Default Template Selection Logic
         if modelo_id is None:
             # Find the first active template
@@ -118,7 +152,8 @@ async def upload_audio(
             participante_id=participante.id,
             caminho_arquivo_audio=file_path,
             status=StatusSessao.AGUARDANDO,
-            modelo_id=modelo_id # Assign Template
+            modelo_id=modelo_id, # Assign Template
+            usuario_id=current_user.id
         )
         session.add(nova_sessao)
         session.commit()
@@ -187,3 +222,50 @@ async def run_pipeline(sessao_id: int):
     except Exception as e:
         print(f"❌ [Background] Erro fatal no pipeline: {e}")
         traceback.print_exc()
+
+class ShareRequest(BaseModel):
+    email: str
+
+@router.post("/sessoes/{sessao_id}/compartilhar")
+async def compartilhar_sessao(
+    sessao_id: int, 
+    share_data: ShareRequest,
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
+    # 1. Buscar Sessão
+    sessao = session.get(SessaoAconselhamento, sessao_id)
+    if not sessao:
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
+    
+    # 2. Verificar Permissão (Apenas Dono)
+    if sessao.usuario_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Apenas o proprietário pode compartilhar esta sessão.")
+    
+    # 3. Buscar Destinatário
+    destinatario = session.exec(select(Usuario).where(Usuario.email == share_data.email)).first()
+    if not destinatario:
+        raise HTTPException(status_code=404, detail="Usuário destinatário não encontrado no sistema.")
+    
+    if destinatario.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Você não pode compartilhar consigo mesmo.")
+
+    # 4. Verificar se já existe compartilhamento
+    existing = session.exec(select(CompartilhamentoSessao).where(
+        CompartilhamentoSessao.sessao_id == sessao_id, 
+        CompartilhamentoSessao.usuario_destinatario_id == destinatario.id
+    )).first()
+
+    if existing:
+        return {"message": f"Sessão já estava compartilhada com {destinatario.email}"}
+
+    # 5. Criar Compartilhamento
+    novo_share = CompartilhamentoSessao(
+        sessao_id=sessao_id,
+        usuario_destinatario_id=destinatario.id, 
+        permissoes="leitura"
+    )
+    session.add(novo_share)
+    session.commit()
+    
+    return {"message": f"Sessão compartilhada com sucesso para {destinatario.email}"}

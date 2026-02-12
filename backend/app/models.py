@@ -69,3 +69,10 @@ class SessaoAconselhamento(SQLModel, table=True):
 
     class Config:
         arbitrary_types_allowed = True
+
+class CompartilhamentoSessao(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    sessao_id: int = Field(foreign_key="sessaoaconselhamento.id")
+    usuario_destinatario_id: int = Field(foreign_key="usuario.id")
+    data_compartilhamento: datetime = Field(default_factory=datetime.now)
+    permissoes: str = Field(default="leitura") # "leitura", "admin"
