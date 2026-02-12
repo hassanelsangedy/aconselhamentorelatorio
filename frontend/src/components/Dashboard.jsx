@@ -21,10 +21,15 @@ export default function Dashboard() {
             });
 
             if (response.ok) {
-                const data = await response.json();
-                setSessoes(data.sort((a, b) => new Date(b.data_upload) - new Date(a.data_upload)));
+                const text = await response.text();
+                try {
+                    const data = JSON.parse(text);
+                    setSessoes(data.sort((a, b) => new Date(b.data_upload) - new Date(a.data_upload)));
+                } catch (e) {
+                    console.error("Erro ao fazer parse da resposta das sessões:", e, text);
+                }
             } else {
-                console.error("Falha ao buscar sessões:", response.status);
+                console.error("Falha ao buscar sessões:", response.status, response.statusText);
             }
         } catch (error) {
             console.error("Erro ao buscar sessões:", error);

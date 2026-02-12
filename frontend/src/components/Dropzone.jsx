@@ -21,8 +21,13 @@ export default function Dropzone({ onUploadSuccess }) {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
-                    const data = await res.json();
-                    setTemplates(data);
+                    const text = await res.text();
+                    try {
+                        const data = JSON.parse(text);
+                        setTemplates(data);
+                    } catch (e) {
+                        console.error("Erro parsing templates:", e, text);
+                    }
                 }
             } catch (err) {
                 console.error("Erro ao carregar templates:", err);
@@ -89,11 +94,27 @@ export default function Dropzone({ onUploadSuccess }) {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Erro no upload');
+                let errorDetails = 'Erro no upload';
+                try {
+                    const errorText = await response.text();
+                    const errorData = JSON.parse(errorText);
+                    errorDetails = errorData.detail || errorDetails;
+                } catch (e) {
+                    errorDetails = `Erro ${response.status}: Falha no servidor`;
+                }
+                throw new Error(errorDetails);
             }
 
-            const data = await response.json();
+            const responseText = await response.text();
+            try {
+                // Try to parse success response if it's JSON
+                const data = JSON.parse(responseText);
+                // If success, data might have status/message
+            } catch (e) {
+                // If it's not JSON but 200 OK, maybe just text? Ignore for now if status is 200.
+                console.warn("Upload OK but response not JSON:", responseText);
+            }
+
             setMessage({ type: 'success', text: `Upload concluído! Processando...` });
             if (onUploadSuccess) onUploadSuccess();
         } catch (error) {
