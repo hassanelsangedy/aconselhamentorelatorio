@@ -16,11 +16,20 @@ export default function Dropzone({ onUploadSuccess }) {
         const fetchTemplates = async () => {
             try {
                 const token = await getToken();
-                const token = await getToken();
-                const API_URL = import.meta.env.VITE_API_URL;
+                let API_URL = import.meta.env.VITE_API_URL;
                 console.log("Fetching templates from:", `${API_URL}/api/templates`);
 
-                if (!API_URL) return; // Don't fetch from self
+                if (!API_URL) return;
+
+                // --- HEALTH CHECK DIAGNOSTIC ---
+                try {
+                    const healthRes = await fetch(`${API_URL}/api/health`);
+                    if (healthRes.ok) console.log("✅ [DIAGNOSTIC] Backend Health: OK");
+                    else console.error("❌ [DIAGNOSTIC] Backend Health: FAIL", healthRes.status);
+                } catch (hErr) {
+                    console.error("❌ [DIAGNOSTIC] Backend Health: NETWORK ERROR (CORS?)", hErr);
+                }
+                // -------------------------------
 
                 const res = await fetch(`${API_URL}/api/templates`, {
                     headers: { 'Authorization': `Bearer ${token}` }
