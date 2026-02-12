@@ -18,6 +18,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.get("/sessoes")
 async def listar_sessoes(session: Session = Depends(get_session)):
+    print("⚡ GET /sessoes chamado")
     try:
         statement = select(SessaoAconselhamento).join(Participante)
         results = session.exec(statement).all()
