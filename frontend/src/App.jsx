@@ -16,7 +16,7 @@ function Header() {
         <header className="px-6 py-3 border-b bg-white flex justify-between items-center shadow-sm sticky top-0 z-50">
             <div className="flex items-center gap-8">
                 <Link to="/" className="flex items-center gap-4 hover:opacity-80 transition">
-                    <img src="/psicofisio.png" alt="PsicoFisio" className="h-30 object-contain" />
+                    <img src="/psicofisio.png" alt="Grupo PsicoFisio" className="h-24 object-contain" />
                     <span className="font-display font-bold text-3xl text-slate-800 tracking-tight">Grupo PsicoFisio</span>
                 </Link>
 
