@@ -115,7 +115,7 @@ export default function Dropzone({ onUploadSuccess }) {
                     className="flex-1 p-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     disabled={uploading || loadingTemplates}
                 >
-                    <option value="">Padrão (IA Geral)</option>
+                    <option value="">Caurn Personal Digital</option>
                     {templates.map(t => (
                         <option key={t.id} value={t.id}>{t.nome}</option>
                     ))}
@@ -124,7 +124,7 @@ export default function Dropzone({ onUploadSuccess }) {
                 <span className="text-xs text-slate-400 hidden sm:inline-block">
                     {selectedTemplate
                         ? (templates.find(t => t.id == selectedTemplate)?.descricao || "")
-                        : "Modelo padrão do sistema."}
+                        : "Análise Personalizada Caurn"}
                 </span>
             </div>
 
