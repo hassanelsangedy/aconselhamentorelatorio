@@ -16,7 +16,12 @@ export default function Dropzone({ onUploadSuccess }) {
         const fetchTemplates = async () => {
             try {
                 const token = await getToken();
-                const API_URL = import.meta.env.VITE_API_URL || "";
+                const token = await getToken();
+                const API_URL = import.meta.env.VITE_API_URL;
+                console.log("Fetching templates from:", `${API_URL}/api/templates`);
+
+                if (!API_URL) return; // Don't fetch from self
+
                 const res = await fetch(`${API_URL}/api/templates`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
