@@ -49,3 +49,16 @@ app.include_router(upload_router, prefix="/api")     # /api/upload, /api/sessoes
 @app.get("/")
 def read_root():
     return {"message": "API Aconselhamento Ativa - Multi-User Ready"}
+
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    print(f"🔥 HTTP Error {exc.status_code} at {request.url.path}: {exc.detail}")
+    return await request.app.default_exception_handler(request, exc)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    print(f"❌ Validation Error at {request.url.path}: {exc}")
+    return await request.app.default_exception_handler(request, exc)
