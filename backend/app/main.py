@@ -63,21 +63,32 @@ class LogMiddleware(BaseHTTPMiddleware):
 app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 app.add_middleware(LogMiddleware)
 
-# Configurar CORS (Dynamic Reflection for maximum compatibility)
-# We allow specific domains and local development
-allowed_origins_list = [
-    "https://aconselhamentorelatorio-poqy.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000"
-]
+# --- CUSTOM CORS MIDDLEWARE (BRUTE FORCE) ---
+# Standard CORSMiddleware is being difficult. We will handle headers manually.
+@app.middleware("http")
+async def cors_guard(request: Request, call_next):
+    origin = request.headers.get("origin")
+    
+    # Allow all origins for now to unblock (since we use Bearer tokens, CSRF risk is low)
+    # In production, check against a whitelist if needed.
+    safe_origin = origin if origin else "*"
+    
+    if request.method == "OPTIONS":
+        response = JSONResponse(content={"message": "CORS Preflight OK"}, status_code=200)
+    else:
+        response = await call_next(request)
+    
+    # Attach CORS Headers to EVERY response
+    response.headers["Access-Control-Allow-Origin"] = safe_origin
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    
+    return response
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex="https?://.*", # Keep regex as it's standard
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+# Log Middleware (Keep this for debugging)
+app.add_middleware(LogMiddleware)
 
 if startup_error:
     @app.get("/{path:path}")
