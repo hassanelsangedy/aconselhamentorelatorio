@@ -40,6 +40,30 @@ async def listar_sessoes(session: Session = Depends(get_session)):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/sessoes/{sessao_id}")
+async def obter_sessao(sessao_id: int, session: Session = Depends(get_session)):
+    try:
+        sessao = session.get(SessaoAconselhamento, sessao_id)
+        if not sessao:
+            raise HTTPException(status_code=404, detail="Sessão não encontrada")
+        
+        return {
+            "id": sessao.id,
+            "data_upload": sessao.data_upload,
+            "status": sessao.status,
+            "transcricao_full_text": sessao.transcricao_full_text,
+            "analise_json": sessao.analise_json,
+            "modelo_nome": sessao.modelo.nome if sessao.modelo else "N/A",
+            "participante": {
+                "nome_codigo": sessao.participante.nome_codigo if sessao.participante else "Desconhecido"
+            }
+        }
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/upload")
 async def upload_audio(
     background_tasks: BackgroundTasks,
