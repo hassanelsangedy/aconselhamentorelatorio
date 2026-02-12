@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import TemplateEditor from './components/TemplateEditor';
+import ReportPreview from './components/ReportPreview';
 import { SignedIn, SignedOut, SignIn, UserButton, useUser } from "@clerk/clerk-react";
 import { LayoutDashboard, BrainCircuit } from 'lucide-react';
 
@@ -47,7 +48,7 @@ function WelcomeScreen() {
 
                 <h2 className="text-2xl font-bold text-gray-900 border-b pb-4">Acesso Restrito</h2>
                 <p className="text-gray-600 text-sm">
-                    Sistema de Aconselhamento Inteligente.<br />Faça login para continuar.
+                    Sistema Inteligente de geração de relatórios.<br />Faça login para continuar.
                 </p>
 
                 <div className="flex justify-center pt-2">
@@ -79,6 +80,7 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/modelos" element={<TemplateEditor />} />
+                        <Route path="/relatorio/:id" element={<ReportPreview />} />
                     </Routes>
                 </div>
             </SignedIn>

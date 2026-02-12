@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Upload, FileAudio, CheckCircle, AlertCircle, Eye, Loader2, LogOut, FileText } from 'lucide-react';
 import Dropzone from './Dropzone';
 import { generateHTMLReport } from '../utils/reportGenerator';
@@ -39,11 +40,14 @@ export default function Dashboard() {
         return () => clearInterval(interval);
     }, []);
 
+    const navigate = useNavigate(); // Add hook
+
     const handleReport = (sessao) => {
         if (!sessao.analise_json) {
             alert("Análise ainda não concluída.");
             return;
         }
+        // Generate HTML Report URL
         const html = generateHTMLReport(sessao.analise_json, null, window.location.origin + '/logos/caurnpersonaldigital.jpeg', window.location.origin + '/psicofisio.png');
         const blob = new Blob([html], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
@@ -93,8 +97,9 @@ export default function Dashboard() {
         <div className="container mx-auto p-6 max-w-5xl">
             <header className="mb-10 text-center">
                 <h1 className="text-4xl font-bold text-slate-800 mb-2 font-display">Painel de Análises</h1>
-                <p className="text-slate-500">Sistema Inteligente de Aconselhamento de Atividade Física</p>
-            </header>
+                <p className="text-slate-500 text-lg font-light">
+                    Sistema Inteligente de geração de relatórios
+                </p></header>
 
             <section className="mb-12">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
