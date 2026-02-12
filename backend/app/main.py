@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     # For now, let's keep it simple.
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 
 # Configurar CORS
 import os
