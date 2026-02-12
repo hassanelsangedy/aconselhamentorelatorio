@@ -45,12 +45,35 @@ async def lifespan(app: FastAPI):
         print(f"🔥 [LIFESPAN] DB Error: {e}", file=sys.stderr)
     yield
 
-app = FastAPI(lifespan=lifespan, redirect_slashes=False)
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Request
 
-# Configurar CORS
+# Debug Middleware to log every request
+class LogMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        print(f"📡 [REQ] {request.method} {request.url.path} | Origin: {request.headers.get('origin')}")
+        try:
+            response = await call_next(request)
+            print(f"✅ [RES] {response.status_code}")
+            return response
+        except Exception as e:
+            print(f"❌ [ERR] Request Failed: {e}")
+            raise e
+
+app = FastAPI(lifespan=lifespan, redirect_slashes=False)
+app.add_middleware(LogMiddleware)
+
+# Configurar CORS (Dynamic Reflection for maximum compatibility)
+# We allow specific domains and local development
+allowed_origins_list = [
+    "https://aconselhamentorelatorio-poqy.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex="https?://.*",
+    allow_origin_regex="https?://.*", # Keep regex as it's standard
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
