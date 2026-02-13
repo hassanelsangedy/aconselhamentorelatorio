@@ -54,8 +54,14 @@ async def get_current_user(
 
     except Exception as e:
         print(f"🔴 [AUTH ERROR] JWT Validation Failed: {e}")
-        print(f"🔴 [AUTH DEBUG] Token Header: {jwt.get_unverified_header(token.credentials)}")
-        raise credentials_exception
+        # print(f"🔴 [AUTH DEBUG] Token Header: {jwt.get_unverified_header(token.credentials)}")
+        
+        # Return specific error to frontend for debugging
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Auth Failed: {str(e)}",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
         
     # Sincronização JIT (Just-In-Time)
     # Tenta usar email se disponível, senão usa ID do Clerk como email fake para garantir unicidade
