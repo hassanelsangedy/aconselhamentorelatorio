@@ -1,72 +1,30 @@
 import sys
-print("🚀 [BOOT] Starting main.py...", file=sys.stderr)
+import traceback
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
-try:
-    from fastapi import FastAPI
-    from fastapi.responses import JSONResponse
-    from fastapi.middleware.cors import CORSMiddleware
-    from contextlib import asynccontextmanager
-    import traceback
-    print("✅ [BOOT] Imports successful.", file=sys.stderr)
-except Exception as ie:
-    print(f"❌ [BOOT] Import Error: {ie}", file=sys.stderr)
-    sys.exit(1)
+print("🚀 [BOOT] Starting SIMPLE main.py...", file=sys.stderr)
 
-# Global variables
-upload_router = None
-auth_router = None
-templates_router = None
-create_db_and_tables = None
-startup_error = None
-
-# Try to import application components
-try:
-    print("🔄 [BOOT] Importing app components...", file=sys.stderr)
-    from app.database import create_db_and_tables
-    from app.upload_service import router as upload_router
-    from app.routers import auth
-    from app.routers import templates as templates_router
-    print("✅ [BOOT] App components imported.", file=sys.stderr)
-except Exception as e:
-    startup_error = traceback.format_exc()
-    print(f"🔥 [BOOT] CRITICAL STARTUP ERROR: {startup_error}", file=sys.stderr)
-
+# --- GLOBAL APP STATE ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if startup_error:
-        yield
-        return
-        
+    print("🔄 [LIFESPAN] Starting...", file=sys.stderr)
     try:
-        print("🔄 [LIFESPAN] Creating DB tables...", file=sys.stderr)
+        from app.database import create_db_and_tables
         create_db_and_tables()
         print("✅ [LIFESPAN] Tables created.", file=sys.stderr)
     except Exception as e:
-        print(f"🔥 [LIFESPAN] DB Error: {e}", file=sys.stderr)
+        print(f"🔥 [LIFESPAN] DB Initialization Error: {e}", file=sys.stderr)
     yield
-
-from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi import Request
-
-# Debug Middleware to log every request
-class LogMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        print(f"📡 [REQ] {request.method} {request.url.path} | Origin: {request.headers.get('origin')}")
-        try:
-            response = await call_next(request)
-            print(f"✅ [RES] {response.status_code}")
-            return response
-        except Exception as e:
-            print(f"❌ [ERR] Request Failed: {e}")
-            raise e
 
 app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 
-# --- NUCLEAR OPTION CORS ---
-# Manually handle CORS at the lowest level possible
+# --- MIDDLEWARE: CORS FORCE ---
 @app.middleware("http")
 async def add_cors_headers(request: Request, call_next):
-    # Hijack OPTIONS requests
+    # Handle Preflight OPTIONS
     if request.method == "OPTIONS":
         return JSONResponse(
             status_code=200,
@@ -79,18 +37,18 @@ async def add_cors_headers(request: Request, call_next):
             }
         )
     
-    # Process normal request
+    # Handle Request
     try:
         response = await call_next(request)
     except Exception as e:
-        # Even if app crashes, return CORS
-        print(f"❌ App Error: {e}")
+        print(f"❌ Uncaught App Error: {e}")
+        traceback.print_exc()
         response = JSONResponse(
             status_code=500,
-            content={"detail": str(e)}
+            content={"detail": "Internal Server Error", "error": str(e)}
         )
 
-    # Inject Headers into Response
+    # Add Headers to Response
     origin = request.headers.get("origin")
     response.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
     response.headers["Access-Control-Allow-Credentials"] = "true"
@@ -99,47 +57,53 @@ async def add_cors_headers(request: Request, call_next):
     
     return response
 
+# --- MIDDLEWARE: LOGGING ---
+class LogMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        print(f"📡 {request.method} {request.url.path}")
+        return await call_next(request)
+
 app.add_middleware(LogMiddleware)
-# NO MORE Standard CORSMiddleware
 
 
+# --- ROUTES ---
 
-# Log Middleware (Keep this for debugging)
+# 1. Health Check (Top Priority)
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok", "message": "Backend is Reachable!"}
 
+@app.get("/")
+def read_root():
+    return {"message": "API Active"}
 
-if startup_error:
-    @app.get("/{path:path}")
-    def read_root_error(path: str):
-        return JSONResponse(
-            status_code=500, 
-            content={
-                "status": "CRITICAL_STARTUP_ERROR", 
-                "message": "The backend failed to start correctly.",
-                "traceback": startup_error
-            }
-        )
-else:
+# 2. Application Routes (Imported safely)
+try:
+    from app.routers import auth, templates
+    from app.upload_service import router as upload_router
+    
     app.include_router(auth.router, prefix="/api")
-    app.include_router(templates_router.router, prefix="/api")
+    app.include_router(templates.router, prefix="/api")
     app.include_router(upload_router, prefix="/api")
+    print("✅ [BOOT] Application Routers Registered.", file=sys.stderr)
+except Exception as e:
+    print(f"🔥 [BOOT] Failed to import routers: {e}", file=sys.stderr)
+    traceback.print_exc()
 
-    @app.api_route("/", methods=["GET", "HEAD"])
-    def read_root():
-        return {"message": "API Aconselhamento Ativa - Multi-User Ready"}
+# 3. Exception Handlers
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
-    @app.get("/api/health")
-    def health_check():
-        return {"status": "ok", "message": "Backend is reachable via CORS"}
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
 
-    from fastapi.exceptions import RequestValidationError
-    from starlette.exceptions import HTTPException as StarletteHTTPException
-
-    @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(request, exc):
-        print(f"🔥 HTTP Error {exc.status_code}: {exc.detail}")
-        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-
-    @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request, exc):
-        print(f"❌ Validation Error: {exc}")
-        return JSONResponse(status_code=422, content={"detail": str(exc)})
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": str(exc)},
+    )
