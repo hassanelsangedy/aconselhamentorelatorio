@@ -261,10 +261,23 @@ async def compartilhar_sessao(
     if sessao.usuario_id != current_user.id:
         raise HTTPException(status_code=403, detail="Apenas o proprietário pode compartilhar esta sessão.")
     
-    # 3. Buscar Destinatário
+    # 3. Buscar ou Criar Destinatário (Invite Flow)
     destinatario = session.exec(select(Usuario).where(Usuario.email == share_data.email)).first()
+    
+    is_new_invite = False
     if not destinatario:
-        raise HTTPException(status_code=404, detail="Usuário destinatário não encontrado no sistema.")
+        # Create Invite User
+        print(f"📧 [SHARE] Criando usuário convidado para {share_data.email}")
+        destinatario = Usuario(
+            nome="Convidado",
+            email=share_data.email,
+            senha_hash="INVITE_PENDING",
+            papel="leitura"
+        )
+        session.add(destinatario)
+        session.commit()
+        session.refresh(destinatario)
+        is_new_invite = True
     
     if destinatario.id == current_user.id:
         raise HTTPException(status_code=400, detail="Você não pode compartilhar consigo mesmo.")
@@ -276,7 +289,12 @@ async def compartilhar_sessao(
     )).first()
 
     if existing:
-        return {"message": f"Sessão já estava compartilhada com {destinatario.email}"}
+         # Gera o link mesmo se já existir
+         link = f"https://aconselhamentorelatorio-poqy.vercel.app/relatorio/{sessao_id}"
+         return {
+             "message": f"Usuário {destinatario.email} já possui acesso.",
+             "link_acesso": link
+         }
 
     # 5. Criar Compartilhamento
     novo_share = CompartilhamentoSessao(
@@ -287,4 +305,12 @@ async def compartilhar_sessao(
     session.add(novo_share)
     session.commit()
     
-    return {"message": f"Sessão compartilhada com sucesso para {destinatario.email}"}
+    # 6. Simular Envio de Email
+    link = f"https://aconselhamentorelatorio-poqy.vercel.app/relatorio/{sessao_id}"
+    print(f"📧 [EMAIL SIMULATION] To: {destinatario.email} | Subject: Você recebeu um relatório! | Link: {link}")
+    
+    return {
+        "message": f"Convite enviado para {destinatario.email}", 
+        "link_acesso": link,
+        "status": "novo_convite" if is_new_invite else "permissao_concedida"
+    }

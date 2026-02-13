@@ -89,31 +89,58 @@ export default function Dashboard() {
         window.open(url, '_blank');
     };
 
-    const handleShare = async (sessao) => {
-        const email = prompt("Digite o e-mail do usuário com quem deseja compartilhar:");
-        if (!email) return;
+    // --- SHARE MODAL STATE ---
+    const [shareModal, setShareModal] = useState({ open: false, session: null });
+    const [shareEmail, setShareEmail] = useState("");
+    const [shareResult, setShareResult] = useState(null); // { link: "", message: "" }
+    const [sharing, setSharing] = useState(false);
 
+    const openShareModal = (sessao) => {
+        setShareModal({ open: true, session: sessao });
+        setShareEmail("");
+        setShareResult(null);
+    };
+
+    const closeShareModal = () => {
+        setShareModal({ open: false, session: null });
+    };
+
+    const submitShare = async () => {
+        if (!shareEmail) return;
+        setSharing(true);
         try {
             const token = await getToken();
             const API_URL = import.meta.env.VITE_API_URL || "";
-            const response = await fetch(`${API_URL}/api/sessoes/${sessao.id}/compartilhar`, {
+            const response = await fetch(`${API_URL}/api/sessoes/${shareModal.session.id}/compartilhar`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ email: email })
+                body: JSON.stringify({ email: shareEmail })
             });
 
+            const data = await response.json();
             if (response.ok) {
-                alert("Sessão compartilhada com sucesso!");
+                setShareResult({
+                    message: data.message,
+                    link: data.link_acesso
+                });
             } else {
-                const err = await response.json();
-                alert(`Erro ao compartilhar: ${err.detail || 'Falha desconhecida'}`);
+                alert(`Erro: ${data.detail}`);
             }
         } catch (error) {
             console.error("Erro ao compartilhar:", error);
-            alert("Erro de conexão ao compartilhar.");
+            alert("Erro de conexão.");
+        } finally {
+            setSharing(false);
+        }
+    };
+
+    const copyLink = () => {
+        if (shareResult?.link) {
+            navigator.clipboard.writeText(shareResult.link);
+            alert("Link copiado!");
         }
     };
 
@@ -127,7 +154,71 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="container mx-auto p-6 max-w-5xl">
+        <div className="container mx-auto p-6 max-w-5xl relative">
+
+            {/* --- SHARE MODAL --- */}
+            {shareModal.open && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                                <Share2 className="w-5 h-5 text-blue-600" />
+                                Compartilhar Sessão
+                            </h3>
+                            <button onClick={closeShareModal} className="text-slate-400 hover:text-slate-600">✕</button>
+                        </div>
+
+                        {!shareResult ? (
+                            <div className="space-y-4">
+                                <p className="text-sm text-slate-600">
+                                    O destinatário receberá acesso a este relatório. Se ele ainda não tiver conta, um convite será criado.
+                                </p>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-700 mb-1">E-mail do destinatário</label>
+                                    <input
+                                        type="email"
+                                        value={shareEmail}
+                                        onChange={(e) => setShareEmail(e.target.value)}
+                                        placeholder="exemplo@email.com"
+                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <button onClick={closeShareModal} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
+                                    <button
+                                        onClick={submitShare}
+                                        disabled={!shareEmail || sharing}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {sharing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enviar Convite"}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 text-center">
+                                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                                    <CheckCircle className="w-6 h-6" />
+                                </div>
+                                <h4 className="font-medium text-green-800">Convite Enviado!</h4>
+                                <p className="text-sm text-slate-600">{shareResult.message}</p>
+
+                                <div className="bg-slate-50 p-3 rounded-lg border flex items-center gap-2 text-left">
+                                    <code className="text-xs text-slate-500 break-all flex-1">{shareResult.link}</code>
+                                    <button onClick={copyLink} className="p-2 hover:bg-slate-200 rounded text-slate-600" title="Copiar Link">
+                                        <FileText className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                <button onClick={closeShareModal} className="w-full py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">
+                                    Fechar
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <header className="mb-10 text-center">
                 <h1 className="text-4xl font-bold text-slate-800 mb-2 font-display">Painel de Análises</h1>
                 <p className="text-slate-500 text-lg font-light">
@@ -187,7 +278,7 @@ export default function Dashboard() {
                                             {sessao.status === 'CONCLUIDO' && (
                                                 <div className="flex justify-end gap-2">
                                                     <button
-                                                        onClick={() => handleShare(sessao)}
+                                                        onClick={() => openShareModal(sessao)}
                                                         className="text-green-600 hover:text-green-800 transition-colors p-2 rounded-lg hover:bg-green-50"
                                                         title="Compartilhar"
                                                     >
