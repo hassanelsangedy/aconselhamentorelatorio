@@ -32,8 +32,12 @@ async def get_current_user(
     )
     
     try:
-        # Correct method name is get_signing_key_from_token
-        signing_key = jwks_client.get_signing_key_from_token(token.credentials)
+        # Extract Key ID (kid) manually to be safe
+        unverified_header = jwt.get_unverified_header(token.credentials)
+        kid = unverified_header.get("kid")
+        
+        # Get the key using the kid
+        signing_key = jwks_client.get_signing_key(kid)
         
         # Decode using the key
         payload = jwt.decode(
@@ -41,8 +45,7 @@ async def get_current_user(
             signing_key.key,
             algorithms=["RS256"],
             options={"verify_aud": False}, 
-            # We will temporarily disable issuer check to debug if URL mismatch is the cause
-            # issuer=CLERK_ISSUER, 
+            # issuer=CLERK_ISSUER, # Keep disabled for now
         )
         
         user_id_clerk = payload.get("sub")
