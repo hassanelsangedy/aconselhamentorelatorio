@@ -45,7 +45,7 @@ async def get_current_user(
             signing_key.key,
             algorithms=["RS256"],
             options={"verify_aud": False}, 
-            leeway=120, # Allow 2 minutes of clock skew
+            leeway=300, # Allow 5 minutes of clock skew (Aggressive Fix)
             # issuer=CLERK_ISSUER, # Keep disabled for now
         )
         
