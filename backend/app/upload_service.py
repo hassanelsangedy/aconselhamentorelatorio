@@ -229,6 +229,21 @@ async def run_pipeline(sessao_id: int):
                 sessao.analise_json = resultado.get("analise", {})
                 sessao.status = StatusSessao.CONCLUIDO
                 
+                # --- AUTO-UPDATE PARTICIPANT NAME ---
+                try:
+                    nome_extraido = sessao.analise_json.get("dados_identificacao", {}).get("nome_participante")
+                    if nome_extraido and nome_extraido.lower() not in ["não identificado", "desconhecido", "nd"]:
+                        # Fetch original participant record to update it
+                        if sessao.participante_id:
+                            participante_db = session.get(Participante, sessao.participante_id)
+                            if participante_db:
+                                print(f"♻️ [UPDATE] Atualizando nome do participante: {participante_db.nome_codigo} -> {nome_extraido}")
+                                participante_db.nome_codigo = nome_extraido
+                                session.add(participante_db)
+                except Exception as update_err:
+                    print(f"⚠️ [WARN] Falha ao atualizar nome do participante: {update_err}")
+                # ------------------------------------
+
                 print(f"✅ [Background] Sessão {sessao_id} processada com sucesso!")
             
             except Exception as ai_e:
