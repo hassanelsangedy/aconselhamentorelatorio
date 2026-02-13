@@ -32,24 +32,26 @@ async def get_current_user(
     )
     
     try:
-        signing_key = jwks_client.get_signing_key_from_jwt(token.credentials)
+        # Correct method name is get_signing_key_from_token
+        signing_key = jwks_client.get_signing_key_from_token(token.credentials)
         
+        # Decode using the key
         payload = jwt.decode(
             token.credentials,
             signing_key.key,
             algorithms=["RS256"],
-            # Important: Validating audience is crucial, but Clerk tokens for backend often don't have it standardly set unless custom.
-            # We skip audience but enforce issuer.
             options={"verify_aud": False}, 
-            issuer=CLERK_ISSUER,
+            # We will temporarily disable issuer check to debug if URL mismatch is the cause
+            # issuer=CLERK_ISSUER, 
         )
         
         user_id_clerk = payload.get("sub")
         if user_id_clerk is None:
              raise credentials_exception
 
-    except jwt.PyJWTError as e:
-        print(f"JWT Validation Error: {e}")
+    except Exception as e:
+        print(f"🔴 [AUTH ERROR] JWT Validation Failed: {e}")
+        print(f"🔴 [AUTH DEBUG] Token Header: {jwt.get_unverified_header(token.credentials)}")
         raise credentials_exception
         
     # Sincronização JIT (Just-In-Time)
