@@ -77,7 +77,12 @@ app.add_middleware(LogMiddleware)
 # 1. Health Check (Top Priority)
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "message": "Backend is Reachable!"}
+    from datetime import datetime
+    return {
+        "status": "ok", 
+        "message": "Backend is Reachable!",
+        "server_time": datetime.utcnow().isoformat()
+    }
 
 @app.get("/")
 def read_root():
