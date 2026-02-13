@@ -60,8 +60,14 @@ async def add_cors_headers(request: Request, call_next):
 # --- MIDDLEWARE: LOGGING ---
 class LogMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        print(f"📡 {request.method} {request.url.path}")
-        return await call_next(request)
+        print(f"📡 [REQ] {request.method} {request.url.path}")
+        try:
+            response = await call_next(request)
+            print(f"✅ [RES] {response.status_code} for {request.url.path}")
+            return response
+        except Exception as e:
+            print(f"❌ [ERR] Middleware caught: {e}")
+            raise e
 
 app.add_middleware(LogMiddleware)
 

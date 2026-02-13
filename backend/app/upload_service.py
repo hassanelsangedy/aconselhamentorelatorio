@@ -38,23 +38,42 @@ async def listar_sessoes(
         )
         
         results = session.exec(statement).all()
+        print(f"🔍 [DEBUG] Encontradas {len(results)} sessões no banco.")
         
-        return [
-            {
-                "id": s.id,
-                "data_upload": s.data_upload,
-                "status": s.status,
-                "transcricao_full_text": s.transcricao_full_text,
-                "analise_json": s.analise_json,
-                "modelo_nome": s.modelo.nome if s.modelo else "N/A", # Return template name
-                "participante": {
-                    "nome_codigo": s.participante.nome_codigo
+        response_list = []
+        for s in results:
+            try:
+                # Safe Access Logic
+                modelo_nome = "N/A"
+                if s.modelo:
+                    modelo_nome = s.modelo.nome
+                
+                part_nome = "Desconhecido"
+                if s.participante:
+                    part_nome = s.participante.nome_codigo
+
+                item = {
+                    "id": s.id,
+                    "data_upload": s.data_upload,
+                    "status": s.status,
+                    "transcricao_full_text": s.transcricao_full_text,
+                    "analise_json": s.analise_json,
+                    "modelo_nome": modelo_nome,
+                    "participante": {
+                        "nome_codigo": part_nome
+                    }
                 }
-            }
-            for s in results
-        ]
+                response_list.append(item)
+            except Exception as item_error:
+                print(f"⚠️ [WARN] Erro ao processar sessão {s.id}: {item_error}")
+                continue
+        
+        print(f"✅ [DEBUG] Retornando {len(response_list)} sessões válidas.")
+        return response_list
+
     except Exception as e:
         traceback.print_exc()
+        print(f"❌ [CRITICAL] Erro fatal em listar_sessoes: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessoes/{sessao_id}")
