@@ -25,7 +25,7 @@ function Header() {
                         <LayoutDashboard className="w-4 h-4" /> Painel
                     </Link>
                     <Link to="/modelos" className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${isActive('/modelos')}`}>
-                        <BrainCircuit className="w-4 h-4" /> Modelos IA
+                        <BrainCircuit className="w-4 h-4" /> Criar modelo de relatório
                     </Link>
                 </nav>
             </div>
