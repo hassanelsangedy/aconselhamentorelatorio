@@ -308,6 +308,79 @@ export default function Dashboard() {
                     </table>
                 </div>
             </section>
+
+            {/* --- SEÇÃO COMO FUNCIONA (TUTORIAL VISUAL) --- */}
+            <section className="mt-16 mb-8 border-t pt-10">
+                <h3 className="text-center text-slate-400 font-semibold mb-8 uppercase tracking-widest text-sm">Como usar o sistema</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-4xl mx-auto">
+                    {/* PASSO 1 */}
+                    <div className="group p-6 rounded-2xl bg-white border border-slate-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-100 transition-colors">
+                            <FileText className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h4 className="font-bold text-slate-800 mb-2">1. Crie seu Modelo</h4>
+                        <p className="text-sm text-slate-500 leading-relaxed">
+                            Defina o tipo de análise (entrevista, reunião, etc) e o que a IA deve buscar.
+                        </p>
+                    </div>
+
+                    {/* SETA (Visível em Desktop) */}
+                    <div className="hidden md:flex items-center justify-center">
+                        <div className="w-full h-0.5 bg-slate-200 relative animate-pulse">
+                            <div className="absolute right-0 -top-1.5 w-3 h-3 border-t-2 border-r-2 border-slate-300 rotate-45"></div>
+                        </div>
+                    </div>
+
+                    {/* PASSO 2 */}
+                    <div className="group p-6 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-100 transition-colors relative">
+                            <div className="absolute inset-0 rounded-full border-2 border-purple-200 animate-ping opacity-20"></div>
+                            <Upload className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <h4 className="font-bold text-slate-800 mb-2">2. Faça o Upload</h4>
+                        <p className="text-sm text-slate-500 leading-relaxed">
+                            Envie o áudio da conversa. O sistema transcreve e analisa automaticamente.
+                        </p>
+                    </div>
+
+                    {/* SETA */}
+                    <div className="hidden md:flex items-center justify-center">
+                        <div className="w-full h-0.5 bg-slate-200 relative animate-pulse delay-75">
+                            <div className="absolute right-0 -top-1.5 w-3 h-3 border-t-2 border-r-2 border-slate-300 rotate-45"></div>
+                        </div>
+                    </div>
+
+                    {/* PASSO 3 */}
+                    <div className="group p-6 rounded-2xl bg-white border border-slate-100 hover:border-green-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-100 transition-colors">
+                            <CheckCircle className="w-8 h-8 text-green-600" />
+                        </div>
+                        <h4 className="font-bold text-slate-800 mb-2">3. Relatório Pronto!</h4>
+                        <p className="text-sm text-slate-500 leading-relaxed">
+                            Visualize, exporte em PDF ou compartilhe o link seguro com seus clientes.
+                        </p>
+                    </div>
+                </div>
+
+                {/* AREA PARA GIF (Se disponível futuramente) */}
+                <div className="mt-12 max-w-2xl mx-auto rounded-xl overflow-hidden shadow-2xl border-4 border-slate-200 bg-slate-100 relative group cursor-help">
+                    {/* Placeholder para GIF real. Por enquanto, uma animação CSS simulada */}
+                    <div className="aspect-video bg-slate-800 flex items-center justify-center relative overflow-hidden">
+                        <div className="absolute inset-x-0 top-0 h-8 bg-slate-700 flex items-center px-4 gap-2">
+                            <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                            <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                        </div>
+                        <div className="text-center animate-pulse">
+                            <p className="text-slate-400 font-mono text-sm">Demonstração do Fluxo</p>
+                            <p className="text-slate-600 text-xs mt-1">(Em breve: GIF animado aqui)</p>
+                        </div>
+                        {/* Simulação de "Scan" */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/10 to-transparent h-1/4 animate-[scan_3s_ease-in-out_infinite] pointer-events-none"></div>
+                    </div>
+                </div>
+            </section>
         </div>
     );
 }
