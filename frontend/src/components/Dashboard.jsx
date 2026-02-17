@@ -228,7 +228,7 @@ export default function Dashboard() {
 
             {/* --- SEÇÃO COMO FUNCIONA (CARDS NO TOPO) --- */}
             <section className="mb-12">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-4xl mx-auto">
+                <div className="grid grid-cols-3 gap-4 md:gap-8 text-center max-w-5xl mx-auto">
                     {/* PASSO 1 */}
                     <div className="group p-6 rounded-2xl bg-white border border-slate-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                         <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-100 transition-colors">
