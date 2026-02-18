@@ -227,53 +227,54 @@ export default function Dashboard() {
             </header>
 
             {/* --- SEÇÃO COMO FUNCIONA (CARDS NO TOPO) --- */}
+            {/* --- SEÇÃO COMO FUNCIONA (CARDS NO TOPO) --- */}
             <section className="mb-12">
-                <div className="grid grid-cols-3 gap-4 md:gap-8 text-center max-w-5xl mx-auto">
+                <div className="flex flex-row items-stretch justify-center gap-2 md:gap-6 text-center max-w-6xl mx-auto overflow-x-auto pb-2">
                     {/* PASSO 1 */}
-                    <div className="group p-6 rounded-2xl bg-white border border-slate-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-100 transition-colors">
-                            <FileText className="w-8 h-8 text-blue-600" />
+                    <div className="flex-1 min-w-[140px] group p-4 md:p-6 rounded-2xl bg-white border border-slate-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-100 transition-colors">
+                            <FileText className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                         </div>
-                        <h4 className="font-bold text-slate-800 mb-2">1. Crie seu Modelo</h4>
-                        <p className="text-sm text-slate-500 leading-relaxed">
-                            Defina o tipo de análise (entrevista, reunião, etc) e o que a IA deve buscar.
+                        <h4 className="font-bold text-slate-800 mb-1 text-sm md:text-base">1. Crie Modelo</h4>
+                        <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
+                            Defina o tipo de análise e o que buscar.
                         </p>
                     </div>
 
-                    {/* SETA (Visível em Desktop) */}
-                    <div className="hidden md:flex items-center justify-center">
+                    {/* SETA */}
+                    <div className="hidden md:flex items-center justify-center w-12 shrink-0">
                         <div className="w-full h-0.5 bg-slate-200 relative animate-pulse">
                             <div className="absolute right-0 -top-1.5 w-3 h-3 border-t-2 border-r-2 border-slate-300 rotate-45"></div>
                         </div>
                     </div>
 
                     {/* PASSO 2 */}
-                    <div className="group p-6 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                        <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-100 transition-colors relative">
+                    <div className="flex-1 min-w-[140px] group p-4 md:p-6 rounded-2xl bg-white border border-slate-100 hover:border-purple-200 hover:shadow-lg transition-all duration-300">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-100 transition-colors relative">
                             <div className="absolute inset-0 rounded-full border-2 border-purple-200 animate-ping opacity-20"></div>
-                            <Upload className="w-8 h-8 text-purple-600" />
+                            <Upload className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
                         </div>
-                        <h4 className="font-bold text-slate-800 mb-2">2. Faça o Upload</h4>
-                        <p className="text-sm text-slate-500 leading-relaxed">
-                            Envie o áudio da conversa. O sistema transcreve e analisa automaticamente.
+                        <h4 className="font-bold text-slate-800 mb-1 text-sm md:text-base">2. Upload</h4>
+                        <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
+                            Envie o áudio. O sistema analisa tudo.
                         </p>
                     </div>
 
                     {/* SETA */}
-                    <div className="hidden md:flex items-center justify-center">
+                    <div className="hidden md:flex items-center justify-center w-12 shrink-0">
                         <div className="w-full h-0.5 bg-slate-200 relative animate-pulse delay-75">
                             <div className="absolute right-0 -top-1.5 w-3 h-3 border-t-2 border-r-2 border-slate-300 rotate-45"></div>
                         </div>
                     </div>
 
                     {/* PASSO 3 */}
-                    <div className="group p-6 rounded-2xl bg-white border border-slate-100 hover:border-green-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                        <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-100 transition-colors">
-                            <CheckCircle className="w-8 h-8 text-green-600" />
+                    <div className="flex-1 min-w-[140px] group p-4 md:p-6 rounded-2xl bg-white border border-slate-100 hover:border-green-200 hover:shadow-lg transition-all duration-300">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-100 transition-colors">
+                            <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
                         </div>
-                        <h4 className="font-bold text-slate-800 mb-2">3. Relatório Pronto!</h4>
-                        <p className="text-sm text-slate-500 leading-relaxed">
-                            Visualize, exporte em PDF ou compartilhe o link seguro com seus clientes.
+                        <h4 className="font-bold text-slate-800 mb-1 text-sm md:text-base">3. Relatório</h4>
+                        <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
+                            Exporte PDF ou compartilhe o link.
                         </p>
                     </div>
                 </div>
